@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <style>
+            html{
+	            color: whitesmoke;
+	            font-family: Arial, Helvetica, sans-serif;
+	            font-size: 62.5%;
+            }
+            body{
+	            background: #151515;
+	            font-size: 1.4rem;
+            }
+            .wrapper{
+	            display: block;
+	            margin: 0 auto;
+	            width: 640px;
+            }
+            a{
+	            color: whitesmoke;
+            }
+            canvas{
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);               
+            }
+			.btn {
+  				margin-top: 15px;
+			}
+			.outer {
+  				display: table;
+  				position: absolute;
+  				top: 0;
+  				left: 0;
+  				height: 100%;
+ 				width: 100%;
+			}
+			.middle {
+  				display: table-cell;
+  				vertical-align: middle;
+			}
+			.inner {
+  				margin-left: auto;
+  				margin-right: auto;
+  				width: 400px;
+			}
+			.container {
+				height: 200px;
+				position: relative;
+			}
+			.center {
+				margin: 0;
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				-ms-transform: translate(-50%, -50%);
+				transform: translate(-50%, -50%);
+			}
+			.hcenter {
+				margin: 0;
+				position: absolute;
+				left: 50%;
+				-ms-transform: translate(-50%, 0);
+				transform: translate(-50%, 0);
+			}
+			</style>
+    </head>
+
+    <body>
+        <div class="wrapper">
+            <canvas class="stage"></canvas>
+        </div>
+
+        <script>
+
+			var music = false;
+
+			function startNoMusic(){
+				main();
+			}
+
+			function startMusic(){
+				music = true;
+				main();
+			}
+
+			function sleep(milliseconds) {
+				const date = Date.now();
+				let currentDate = null;
+				do {
+					currentDate = Date.now();
+				} while (currentDate - date < milliseconds);
+			}
+
+			function main(){
+
+				document.getElementById('music').style.display = 'none';
+				document.getElementById('nomusic').style.display = 'none';
+
+				if(music == true) {
+					var C3 = document.getElementById("C3");
+					var D3 = document.getElementById("D3");
+					var E3 = document.getElementById("E3");
+					var F3 = document.getElementById("F3");
+					var G3 = document.getElementById("G3");
+					var A3 = document.getElementById("A3");
+					var B3 = document.getElementById("B3");
+				}
+
+				const canvas = document.querySelector('.stage'),
+					ctx = canvas.getContext('2d'),
+					note = document.querySelector('.note'),
+					canvasSize = 1280,
+					height = 960,
+					midX = canvasSize / 2,
+					midY = canvasSize / 2,
+					fillColour = 'hsla(90, 0%, 20%, 0)',
+					primeColour = 'hsl(0, 80%, 100%)',
+					mcos = Math.cos,
+					msin = Math.sin,
+					msqrt = Math.sqrt,
+					mmax = Math.max;
+				let seed,
+					max,
+					scalar,
+					count,
+					dotSize,
+					batchSize,
+					animCall;
+
+					canvas.width = canvasSize;
+					canvas.height = canvasSize;
+					ctx.fillStyle = primeColour;
+
+					canvas.style.width = canvasSize + 'px';
+
+					function grabUI(){
+						let radioSet = [...document.querySelectorAll('.zooms')];
+						for(let i = 0; i < radioSet.length; i++){
+							radioSet[i].addEventListener('change', (e) => {
+								handleZoomChange(document.querySelector('input[name="zoooms"]:checked').value);
+							});
+						}
+					}
+
+					function handleZoomChange(e){
+						let id = e * 1;
+						dotSize = id < 4 ? 1 : .1;
+						cancelAnimationFrame(animCall);
+						seed = 100;
+						max = midX * seed;
+						scalar = 1 / seed;
+						batchSize = mmax(3, seed / 5);
+						ctx.clearRect(0, 0, canvasSize, canvasSize);
+						count = 1;
+						
+						animCall = requestAnimationFrame(update);
+					}
+
+					function draw(pt,isPrime = false){
+						if(isPrime){
+							ctx.fillRect(pt.x,pt.y,dotSize,dotSize);
+						}
+					}
+					function getPolarPoint(distance, radian){
+						return {x:distance * mcos(radian) + midX, y:distance * msin(radian) + midY}
+					}
+
+					function isPrime(num) {
+						if (num <= 1) return false;
+						if (num % 2 == 0 && num > 2) return false;
+						let s = msqrt(num);
+						for(let i = 3; i <= s; i++) {
+							if(num % i === 0) return false;
+						}
+						return true;
+					}
+
+					function update(){
+						for(let i=0; i<batchSize; i++){
+							draw(getPolarPoint(count * scalar, count), isPrime(count));
+
+
+							if(music == true) {
+								if(isPrime(count)) {
+									var remainder = count % 7
+									console.log(count + ": " + remainder)
+									if(remainder == 0){ C3.play(); sleep(150); }
+									if(remainder == 1){ D3.play(); sleep(150); }
+									if(remainder == 2){ E3.play(); sleep(150); }
+									if(remainder == 3){ F3.play(); sleep(150); }
+									if(remainder == 4){ G3.play(); sleep(150); }
+									if(remainder == 5){ A3.play(); sleep(150); }
+									if(remainder == 6){ B3.play(); sleep(150); }
+								}
+							}
+
+							count++;
+							console.log(count);
+						}
+						if(count < max){
+							animCall = requestAnimationFrame(update);
+						}
+					}
+					grabUI();
+					handleZoomChange(0);
+			}
+
+        </script>
+
+		<div class="hcenter">
+			<br><br>
+			<button onClick="window.location.reload();">REFRESH</button>
+		</div>
+
+		<div class="center">
+			<button id="nomusic" onclick="startNoMusic()">NO MUSIC (FAST)</button>
+			<button id="music" onclick="startMusic()">MUSIC (SLOW)</button>
+		</div>
+
+		<audio id="C3" src="https://drive.google.com/uc?id=1GqG-B-gtRUc5M2nX6WgEwwlHlJL_x9DD"></audio>
+		<audio id="D3" src="https://drive.google.com/uc?id=1zsfRLplEXP8rf2cM4ySQR1eGg9j8yJJG"></audio>
+		<audio id="E3" src="https://drive.google.com/uc?id=1h4WK3phiI_v8HPmEdpAQoBK9wtE8f-Bv"></audio>
+		<audio id="F3" src="https://drive.google.com/uc?id=1UPTnLKSqkjdmsIGjllsIGr-vHG0IxJRG"></audio>
+		<audio id="G3" src="https://drive.google.com/uc?id=1c7ifvwyS9sdmTbv2GjfKhzxRCw-WLH_S"></audio>
+		<audio id="A3" src="https://drive.google.com/uc?id=1CIafaA2gDeS6qSqEcAx2AC15w7A4GnM9"></audio>
+		<audio id="B3" src="https://drive.google.com/uc?id=1Qv4GARi4nFOKj5md1V_nVdRX-pp41ZC6"></audio>
+
+
+    </body>
+
+</html>
