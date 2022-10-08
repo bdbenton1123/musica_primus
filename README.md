@@ -9,7 +9,7 @@ Notes only play when a prime is found while counting to 64,000, leading to a uni
 
 Deployed here:
 
-brandonbenton.com/musica_primus
+https://brandonbenton.com/musica_primus/
 
 Read more about it from the blog post:
 
